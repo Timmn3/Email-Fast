@@ -1,6 +1,6 @@
-API_TOKEN: '6408570549:AAFis6z-W2MTBBJdjWdIxWsLxz9RbhZ64n4'
+API_TOKEN: '5311805468:AAEnBRFxk5e8RkCvOP73Do8hqJYyypVkDlM'
 
-DB_HOST: 'localhost'
+DB_HOST: '89.19.213.197'
 DB_PORT: 5432
 DB_USER: 'postgres'
 DB_NAME: 'sms_email_db'
@@ -22,5 +22,6 @@ SUPPORT_URL: "https://t.me/emailfastsupportbot"
 ADMINS:
   - 321196003 # Dayforce
   - 1687225894
+  - 1089138631
 
 CHANNEL_ID: "-1001689895151"
