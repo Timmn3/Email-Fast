@@ -1,6 +1,6 @@
 API_TOKEN: '6408570549:AAFis6z-W2MTBBJdjWdIxWsLxz9RbhZ64n4'
 
-DB_HOST: '89.19.213.197'
+DB_HOST: 'localhost'
 DB_PORT: 5432
 DB_USER: 'postgres'
 DB_NAME: 'sms_email_db'
