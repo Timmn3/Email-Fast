@@ -12,6 +12,8 @@ Environment=PATH=$VIRTUAL_ENV/bin:$PATH
 ExecStart=/root/tgbot/venv/bin/python /root/tgbot/main.py
 RestartSec=10
 Restart=always
+StandardOutput=append:/var/log/tgbot.log
+StandardError=append:/var/log/tgbot.log
 
 [Install]
 WantedBy=multi-user.target
