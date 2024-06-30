@@ -9,6 +9,7 @@ from aiogram.fsm.state import StatesGroup, State
 from tortoise import timezone
 
 from app.db import models
+from app.db.models import User
 from app.dependencies import ADMINS, bot
 from app.services import bot_texts as bt
 from tabulate import tabulate
@@ -74,6 +75,18 @@ async def stat(message: types.Message):
     )
 
     await message.answer(msg_text)
+
+
+@router.message(Command('add_balance'))
+async def add_balance(message: types.Message):
+
+    user = await User.get_user(message.from_user.id)
+    if user:
+        user.balance += 1000
+        await user.save()
+        await message.answer(f"Баланс пополнен на 1000 рублей. Текущий баланс: {user.balance} рублей.")
+    else:
+        await message.answer("Пользователь не найден.")
 
 
 @router.message(Command('freemoney'))
