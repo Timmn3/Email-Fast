@@ -1,5 +1,4 @@
 from datetime import timedelta
-
 import asyncio
 from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -18,6 +17,16 @@ from app.services import bot_texts as bt
 
 
 async def on_back_mail(c: types.CallbackQuery, widget: Button, manager: DialogManager):
+    """
+    Обработчик для кнопки "Назад" в меню почтовых ящиков.
+    Переключает состояние диалога на основное меню почтовых ящиков.
+
+    :param c: Объект CallbackQuery.
+    :param widget: Объект Button.
+    :param manager: Объект DialogManager.
+    """
+    print("on_back_mail (Обработчик для кнопки 'Назад' в меню почтовых ящиков)")
+
     user = await models.User.get_user(c.from_user.id)
     if not user:
         return
@@ -26,6 +35,16 @@ async def on_back_mail(c: types.CallbackQuery, widget: Button, manager: DialogMa
 
 
 async def on_change_email(c: types.CallbackQuery, widget: Button, manager: DialogManager):
+    """
+    Обработчик для кнопки "Изменить почтовый ящик".
+    Генерирует новый почтовый ящик и сохраняет его в базе данных.
+
+    :param c: Объект CallbackQuery.
+    :param widget: Объект Button.
+    :param manager: Объект DialogManager.
+    """
+    print("on_change_email (Обработчик для кнопки 'Изменить почтовый ящик')")
+
     ctx = manager.current_context()
     mail_id = ctx.dialog_data.get('mail_id')
     if not mail_id:
@@ -47,10 +66,30 @@ async def on_change_email(c: types.CallbackQuery, widget: Button, manager: Dialo
 
 
 async def on_rent_email(c: types.CallbackQuery, widget: Button, manager: DialogManager):
+    """
+    Обработчик для кнопки "Арендовать почтовый ящик".
+    Переключает состояние диалога на меню аренды почтового ящика.
+
+    :param c: Объект CallbackQuery.
+    :param widget: Объект Button.
+    :param manager: Объект DialogManager.
+    """
+    print("on_rent_email (Обработчик для кнопки 'Арендовать почтовый ящик')")
+
     await manager.switch_to(ReceiveEmailMenu.rent_email)
 
 
 async def on_rent_email_item(c: types.CallbackQuery, widget: Button, manager: DialogManager):
+    """
+    Обработчик для выбора периода аренды почтового ящика.
+    Проверяет баланс пользователя и переключает состояние диалога на подтверждение аренды или уведомление о недостаточном балансе.
+
+    :param c: Объект CallbackQuery.
+    :param widget: Объект Button.
+    :param manager: Объект DialogManager.
+    """
+    print("on_rent_email_item (Обработчик для выбора периода аренды почтового ящика)")
+
     widget_id = widget.widget_id
     rent_data = {
         'rent_email_week': (99, 7, '1 неделя'),
@@ -80,6 +119,16 @@ async def on_rent_email_item(c: types.CallbackQuery, widget: Button, manager: Di
 
 
 async def on_confirm_rent_email(c: types.CallbackQuery, widget: Button, manager: DialogManager):
+    """
+    Обработчик для подтверждения аренды почтового ящика.
+    Обновляет информацию о почтовом ящике и балансе пользователя в базе данных.
+
+    :param c: Объект CallbackQuery.
+    :param widget: Объект Button.
+    :param manager: Объект DialogManager.
+    """
+    print("on_confirm_rent_email (Обработчик для подтверждения аренды почтового ящика)")
+
     ctx = manager.current_context()
     if 'email' in ctx.start_data:
         ctx.dialog_data = ctx.start_data
@@ -113,6 +162,15 @@ async def on_confirm_rent_email(c: types.CallbackQuery, widget: Button, manager:
 
 
 async def on_my_rent_emails(c: types.CallbackQuery, widget: Button, manager: DialogManager):
+    """
+    Обработчик для кнопки "Мои арендованные почтовые ящики".
+    Отображает список арендованных почтовых ящиков пользователя.
+
+    :param c: Объект CallbackQuery.
+    :param widget: Объект Button.
+    :param manager: Объект DialogManager.
+    """
+    print("on_my_rent_emails (Обработчик для кнопки 'Мои арендованные почтовые ящики')")
     user = await models.User.get_user(c.from_user.id)
     if not user:
         return
