@@ -118,121 +118,67 @@ async def send_payment_keyboard(m: Union[types.Message, types.CallbackQuery], ma
     :param price: Сумма пополнения.
     """
     if manager:
+        # Если передан менеджер диалогов, получаем текущий контекст
         ctx = manager.current_context()
+        # Извлекаем сумму пополнения из данных диалога
         price = float(ctx.dialog_data['price'])
+        # Получаем данные для продолжения диалога
         continue_data = ctx.start_data
     else:
+        # Если менеджер не передан, данные для продолжения отсутствуют
         continue_data = None
 
+    # Получаем пользователя по его ID
     user = await models.User.get_user(m.from_user.id)
+    # Создаем экземпляр API для Lava
     lava = LavaApi()
+    # Создаем запись о платеже в базе данных
     lava_payment = await models.Payment.create_payment(
         user=user,
         method=models.PaymentMethod.LAVA,
         amount=price,
         continue_data=continue_data
     )
+    # Формируем идентификатор заказа
     order_id = f'sms_email_:{lava_payment.id}'
+    # Создаем счет на оплату через Lava API
     response = await lava.create_invoice(price, order_id=order_id)
+    # Извлекаем идентификатор счета из ответа API
     invoice_id = response['data']['id']
+    # Сохраняем идентификатор счета и заказа в базе данных
     lava_payment.invoice_id = invoice_id
     lava_payment.order_id = order_id
     await lava_payment.save()
+    # Получаем URL для оплаты через Lava
     lava_url = response['data']['url']
 
+    # Создаем запись о платеже для FreeKassa
     payment = await models.Payment.create_payment(
         user=user,
         method=models.PaymentMethod.FREEKASSA,
         amount=price,
         continue_data=continue_data
     )
+    # Генерируем ссылки для оплаты через FreeKassa
     sbp_url = generate_fk_link(price, payment.id, method_id=42)
     other_url = generate_fk_link(price, payment.id)
     if manager:
+        # Сбрасываем стек диалогов, если передан менеджер
         await manager.reset_stack()
+    # Создаем клавиатуру с кнопками для выбора способа оплаты
     builder = InlineKeyboardBuilder()
     builder.button(text=bt.METHOD_BANK_CARD_BTN, web_app=types.WebAppInfo(url=lava_url))
     if price >= 300:
+        # Добавляем кнопки для оплаты через SBP и криптовалюту, если сумма >= 300
         builder.button(text=bt.METHOD_SBP_BTN, web_app=types.WebAppInfo(url=sbp_url))
         builder.button(text=bt.METHOD_CRYPTO_BTN, web_app=types.WebAppInfo(url=other_url))
+    # Добавляем кнопку для других способов оплаты
     builder.button(text=bt.METHOD_OTHER_BTN, web_app=types.WebAppInfo(url=other_url))
     builder.adjust(1)
 
     if isinstance(m, types.Message):
+        # Отправляем сообщение с клавиатурой, если m является объектом Message
         await m.answer(text=bt.SELECT_DEPOSIT_METHOD, reply_markup=builder.as_markup())
     else:
+        # Редактируем текст сообщения с клавиатурой, если m является объектом CallbackQuery
         await m.message.edit_text(text=bt.SELECT_DEPOSIT_METHOD, reply_markup=builder.as_markup())
-
-# async def on_deposit_method(c: types.CallbackQuery, widget: Button, manager: DialogManager):
-#     ctx = manager.current_context()
-#     price = float(ctx.dialog_data['price'])
-#     method = widget.widget_id
-#     user = await models.User.get_user(c.from_user.id)
-#     if method == 'bank_card':
-#         lava = LavaApi()
-#         payment = await models.Payment.create_payment(
-#             user=user,
-#             method=models.PaymentMethod.LAVA,
-#             amount=price
-#         )
-#         order_id = f'sms_email:{payment.id}'
-#         response = await lava.create_invoice(price, order_id=order_id)
-#         if response['status'] == 200:
-#             invoice_id = response['data']['id']
-#             payment.invoice_id = invoice_id
-#             payment.order_id = order_id
-#             await payment.save()
-#             await manager.reset_stack()
-#             msg_text = bt.PAYMENT_INFO_MSG.format(
-#                 payment_id=payment.id,
-#                 amount=price,
-#                 method='Банковская карта'
-#             )
-#             await c.message.edit_text(
-#                 text=msg_text,
-#                 reply_markup=payment_kb(response['data']['url'])
-#             )
-#
-#     elif method == 'sbp':
-#         payment = await models.Payment.create_payment(
-#             user=user,
-#             method=models.PaymentMethod.FREEKASSA,
-#             amount=price
-#         )
-#         url = generate_fk_link(price, payment.id, method_id=42)
-#         await manager.reset_stack()
-#         msg_text = bt.PAYMENT_INFO_MSG.format(
-#             payment_id=payment.id,
-#             amount=price,
-#             method='СБП'
-#         )
-#         await c.message.edit_text(
-#             text=msg_text,
-#             reply_markup=payment_kb(url)
-#         )
-#
-#     elif method == 'crypto' or method == 'other':
-#         payment = await models.Payment.create_payment(
-#             user=user,
-#             method=models.PaymentMethod.FREEKASSA,
-#             amount=price
-#         )
-#         url = generate_fk_link(price, payment.id)
-#         await manager.reset_stack()
-#         if method == 'crypto':
-#             method_name = 'Криптовалюта'
-#         else:
-#             method_name = 'Другое'
-#
-#         msg_text = bt.PAYMENT_INFO_MSG.format(
-#             payment_id=payment.id,
-#             amount=price,
-#             method=method_name
-#         )
-#         await c.message.edit_text(
-#             text=msg_text,
-#             reply_markup=payment_kb(url)
-#         )
-#
-#     else:
-#         await c.answer(text='Недоступно', show_alert=True)
