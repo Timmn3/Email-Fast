@@ -13,7 +13,13 @@ from app.dialogs.receive_sms.selected import on_select_country, on_select_servic
 from app.services import bot_texts as bt
 
 
+# Окно выбора страны
 def select_country_window():
+    """
+    Создает окно выбора страны с прокручиваемым списком стран и кнопкой поиска.
+
+    :return: Объект Window от aiogram_dialog.
+    """
     return Window(
         Const(bt.SELECT_COUNTRY),
         ScrollingGroup(
@@ -34,7 +40,13 @@ def select_country_window():
     )
 
 
+# Окно ввода страны
 def enter_country_window():
+    """
+    Создает окно ввода названия страны с текстовым вводом и кнопкой назад.
+
+    :return: Объект Window от aiogram_dialog.
+    """
     return Window(
         Const(bt.ENTER_COUNTRY),
         TextInput(id="country_name", on_success=on_result_country),
@@ -43,7 +55,13 @@ def enter_country_window():
     )
 
 
+# Окно ошибки ввода страны
 def enter_country_error_window():
+    """
+    Создает окно ошибки ввода страны с кнопкой повторного ввода и кнопкой назад.
+
+    :return: Объект Window от aiogram_dialog.
+    """
     return Window(
         Const(bt.ENTER_COUNTRY_ERROR),
         Button(Const(bt.ENTER_AGAIN_BTN), id="enter_again", on_click=on_search_country),
@@ -52,7 +70,13 @@ def enter_country_error_window():
     )
 
 
+# Окно выбора сервиса
 def select_service_window():
+    """
+    Создает окно выбора сервиса с прокручиваемым списком сервисов и кнопкой поиска.
+
+    :return: Объект Window от aiogram_dialog.
+    """
     return Window(
         Const(bt.SELECT_SERVICE),
         ScrollingGroup(
@@ -74,7 +98,13 @@ def select_service_window():
     )
 
 
+# Окно ввода сервиса
 def enter_service_window():
+    """
+    Создает окно ввода названия сервиса с текстовым вводом и кнопкой назад.
+
+    :return: Объект Window от aiogram_dialog.
+    """
     return Window(
         Const(bt.ENTER_SERVICE),
         TextInput(id="service_name", on_success=on_result_service),
@@ -83,7 +113,13 @@ def enter_service_window():
     )
 
 
+# Окно ошибки ввода сервиса
 def enter_service_error_window():
+    """
+    Создает окно ошибки ввода сервиса с кнопкой повторного ввода, кнопкой выбора другого сервиса и кнопкой назад.
+
+    :return: Объект Window от aiogram_dialog.
+    """
     return Window(
         Const(bt.ENTER_SERVICE_ERROR),
         Button(Const(bt.ENTER_AGAIN_BTN), id="enter_again", on_click=on_search_service),
@@ -100,7 +136,13 @@ def enter_service_error_window():
     )
 
 
+# Окно недостаточного баланса
 def not_enough_balance_window():
+    """
+    Создает окно уведомления о недостаточном балансе с кнопкой пополнения и кнопкой назад.
+
+    :return: Объект Window от aiogram_dialog.
+    """
     return Window(
         Format(bt.NOT_ENOUGH_BALANCE),
         Button(Const(bt.DEPOSIT_BTN), id="deposit_btn", on_click=on_deposit_new),
