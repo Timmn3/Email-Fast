@@ -17,9 +17,7 @@ from app.services.notify_admins import notify_wakeup_bot
 from app.services.periodic_tasks import check_sms, check_email, update_countries_and_services, check_payment
 from app.services.set_bot_commands import set_default_commands
 from app.services import bot_texts as bt
-import logging
-# Настройка логирования для APScheduler
-logging.getLogger('apscheduler').setLevel(logging.WARNING)
+
 
 async def on_unknown_intent(event, dialog_manager: DialogManager):
     await dialog_manager.start(
@@ -63,14 +61,11 @@ async def main(dp: Dispatcher):
 
 
 def set_scheduled_jobs(scheduler, *args, **kwargs):
-    try:
-        scheduler.add_job(check_sms, "interval", seconds=10)
-        scheduler.add_job(check_email, "interval", seconds=10)
-        scheduler.add_job(check_payment, "interval", seconds=10)
-        scheduler.add_job(update_countries_and_services, "interval", minutes=30,
-                          next_run_time=datetime.now() + timedelta(seconds=10))
-    except Exception as e:
-        pass
+    scheduler.add_job(check_sms, "interval", seconds=10)
+    scheduler.add_job(check_email, "interval", seconds=10)
+    scheduler.add_job(check_payment, "interval", seconds=10)
+    scheduler.add_job(update_countries_and_services, "interval", minutes=30,
+                      next_run_time=datetime.now() + timedelta(seconds=10))
 
 
 if __name__ == '__main__':
