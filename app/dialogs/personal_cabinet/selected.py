@@ -24,7 +24,6 @@ async def on_deposit(c: types.CallbackQuery, widget: Button, manager: DialogMana
     :param manager: Объект DialogManager.
     """
     await manager.switch_to(PersonalMenu.deposit)
-    print("personal_cabinet.on_deposit")
 
 
 async def on_deposit_new(c: types.CallbackQuery, widget: Button, manager: DialogManager):
@@ -36,7 +35,6 @@ async def on_deposit_new(c: types.CallbackQuery, widget: Button, manager: Dialog
     :param widget: Объект Button.
     :param manager: Объект DialogManager.
     """
-    print("personal_cabinet.on_deposit_new")
     ctx = manager.current_context()
     await manager.start(PersonalMenu.deposit, data=ctx.dialog_data)
 
@@ -50,9 +48,7 @@ async def on_deposit_state(c: types.CallbackQuery, widget: Button, manager: Dial
     :param widget: Объект Button.
     :param manager: Объект DialogManager.
     """
-    print("personal_cabinet.on_deposit_state")
     ctx = manager.current_context()
-    print(f' ctx.dialog_data = {ctx.dialog_data}')
     price = ctx.dialog_data['cost']
     ctx.dialog_data['price'] = price
     await send_payment_keyboard(c, manager=manager)
@@ -72,7 +68,6 @@ async def on_deposit_price(c: types.CallbackQuery, widget: Select, manager: Dial
     ctx = manager.current_context()
     ctx.dialog_data['price'] = price
     await send_payment_keyboard(c, manager=manager, price=price)
-    print("personal_cabinet.on_deposit_price")
 
 
 async def on_other_price(c: types.CallbackQuery, widget: Button, manager: DialogManager):
@@ -85,7 +80,6 @@ async def on_other_price(c: types.CallbackQuery, widget: Button, manager: Dialog
     :param manager: Объект DialogManager.
     """
     await manager.switch_to(PersonalMenu.enter_amount)
-    print("personal_cabinet.on_other_price")
 
 
 async def on_enter_other_price(m: types.Message, widget: TextInput, manager: DialogManager, price_text: str):
@@ -98,7 +92,6 @@ async def on_enter_other_price(m: types.Message, widget: TextInput, manager: Dia
     :param manager: Объект DialogManager.
     :param price_text: Введенная сумма пополнения.
     """
-    print("personal_cabinet.on_enter_other_price")
     if not price_text.isdigit():
         await m.answer(text='Сумма должна быть числом')
         await manager.switch_to(PersonalMenu.enter_amount)
@@ -124,7 +117,6 @@ async def send_payment_keyboard(m: Union[types.Message, types.CallbackQuery], ma
     :param manager: Объект DialogManager.
     :param price: Сумма пополнения.
     """
-    print("personal_cabinet.send_payment_keyboard")
     if manager:
         ctx = manager.current_context()
         price = float(ctx.dialog_data['price'])

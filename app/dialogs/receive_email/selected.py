@@ -25,7 +25,6 @@ async def on_back_mail(c: types.CallbackQuery, widget: Button, manager: DialogMa
     :param widget: Объект Button.
     :param manager: Объект DialogManager.
     """
-    print("on_back_mail (Обработчик для кнопки 'Назад' в меню почтовых ящиков)")
 
     user = await models.User.get_user(c.from_user.id)
     if not user:
@@ -43,7 +42,6 @@ async def on_change_email(c: types.CallbackQuery, widget: Button, manager: Dialo
     :param widget: Объект Button.
     :param manager: Объект DialogManager.
     """
-    print("on_change_email (Обработчик для кнопки 'Изменить почтовый ящик')")
 
     ctx = manager.current_context()
     mail_id = ctx.dialog_data.get('mail_id')
@@ -74,7 +72,6 @@ async def on_rent_email(c: types.CallbackQuery, widget: Button, manager: DialogM
     :param widget: Объект Button.
     :param manager: Объект DialogManager.
     """
-    print("on_rent_email (Обработчик для кнопки 'Арендовать почтовый ящик')")
 
     await manager.switch_to(ReceiveEmailMenu.rent_email)
 
@@ -88,7 +85,6 @@ async def on_rent_email_item(c: types.CallbackQuery, widget: Button, manager: Di
     :param widget: Объект Button.
     :param manager: Объект DialogManager.
     """
-    print("on_rent_email_item (Обработчик для выбора периода аренды почтового ящика)")
 
     widget_id = widget.widget_id
     rent_data = {
@@ -127,7 +123,6 @@ async def on_confirm_rent_email(c: types.CallbackQuery, widget: Button, manager:
     :param widget: Объект Button.
     :param manager: Объект DialogManager.
     """
-    print("on_confirm_rent_email (Обработчик для подтверждения аренды почтового ящика)")
 
     ctx = manager.current_context()
     if 'email' in ctx.start_data:
@@ -170,7 +165,6 @@ async def on_my_rent_emails(c: types.CallbackQuery, widget: Button, manager: Dia
     :param widget: Объект Button.
     :param manager: Объект DialogManager.
     """
-    print("on_my_rent_emails (Обработчик для кнопки 'Мои арендованные почтовые ящики')")
     user = await models.User.get_user(c.from_user.id)
     if not user:
         return

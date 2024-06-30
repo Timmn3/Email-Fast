@@ -21,7 +21,6 @@ def receive_email_window():
 
     :return: Объект Window для отображения информации о почтовом ящике.
     """
-    print("receive_email_window (Создает окно для отображения информации о текущем почтовом ящике пользователя)")
 
     return Window(
         Format(bt.MY_EMAIL),  # Форматированный текст с информацией о почтовом ящике
@@ -47,7 +46,6 @@ def rent_email_window():
 
     :return: Объект Window для выбора периода аренды.
     """
-    print("rent_email_window (Создает окно для выбора периода аренды почтового ящика)")
 
     return Window(
         Format(bt.MY_EMAIL),  # Форматированный текст с информацией о почтовом ящике
@@ -64,7 +62,6 @@ def confirm_rent_email_window():
 
     :return: Объект Window для подтверждения аренды.
     """
-    print("confirm_rent_email_window (Создает окно для подтверждения аренды почтового ящика)")
 
     return Window(
         Format(bt.CONFIRM_RENT_EMAIL),  # Форматированный текст с подтверждением аренды
@@ -81,7 +78,6 @@ def not_enough_balance_window():
 
     :return: Объект Window для уведомления о недостаточном балансе.
     """
-    print("not_enough_balance_window (Создает окно для уведомления пользователя о недостаточном балансе)")
 
     return Window(
         Format(bt.NOT_ENOUGH_BALANCE),  # Форматированный текст с уведомлением о недостаточном балансе
@@ -98,7 +94,6 @@ def rent_email_success_window():
 
     :return: Объект Window для уведомления об успешной аренде.
     """
-    print("rent_email_success_window (Создает окно для уведомления пользователя об успешной аренде почтового ящика)")
     return Window(
         Format(bt.RENT_EMAIL_SUCCESS),  # Форматированный текст с уведомлением об успешной аренде
         Button(Const(bt.MY_RENT_EMAILS_BTN), id='my_rent_emails_btn', on_click=on_my_rent_emails),
