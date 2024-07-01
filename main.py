@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 from aiogram.filters import ExceptionTypeFilter
@@ -61,14 +62,29 @@ async def main(dp: Dispatcher):
 
 
 def set_scheduled_jobs(scheduler, *args, **kwargs):
-    scheduler.add_job(check_sms, "interval", seconds=10)
-    scheduler.add_job(check_email, "interval", seconds=10)
-    scheduler.add_job(check_payment, "interval", seconds=10)
+    scheduler.add_job(check_sms, "interval", seconds=10, max_instances=3)
+    scheduler.add_job(check_email, "interval", seconds=10, max_instances=3)
+    scheduler.add_job(check_payment, "interval", seconds=10, max_instances=3)
     scheduler.add_job(update_countries_and_services, "interval", minutes=30,
-                      next_run_time=datetime.now() + timedelta(seconds=10))
+                      next_run_time=datetime.now() + timedelta(seconds=10), max_instances=3)
+
+
+class SkipSpecificLogFilter(logging.Filter):
+    def filter(self, record):
+        return not (
+            "Execution of job" in record.getMessage() and
+            "skipped: maximum number of running instances reached" in record.getMessage()
+        )
 
 
 if __name__ == '__main__':
     from app.dependencies import dp
+
+    # Настройка логирования
+    logger = logging.getLogger('apscheduler')
+    logger.setLevel(logging.WARNING)
+    handler = logging.StreamHandler()
+    handler.addFilter(SkipSpecificLogFilter())
+    logger.addHandler(handler)
 
     asyncio.run(main(dp))
