@@ -165,7 +165,7 @@ class TempMail:
     async def generate_email(self):
         url = self.base_url + 'action=genRandomMailbox&count=1'
         response = await self._response(url)
-        print(f'123R: {response}', flush=True)
+        # print(f'123R: {response}', flush=True)
         email_list = json.loads(response)
         if len(email_list) > 0:
             return email_list[0]
@@ -173,7 +173,7 @@ class TempMail:
     async def get_message_ids(self, login: str, domain: str):
         url = self.base_url + f'action=getMessages&login={login}&domain={domain}'
         response = await self._response(url)
-        print(f'123R: {response}', flush=True)
+        # print(f'123R: {response}', flush=True)
         messages = json.loads(response)
         message_ids = [message['id'] for message in messages[:5]]
         return message_ids

@@ -28,7 +28,7 @@ async def on_select_country(c: types.CallbackQuery, widget: Select, manager: Dia
     :param country_id: Идентификатор выбранной страны.
     """
     await manager.start(ServiceMenu.select_service, data={"country_id": country_id})
-    print('on_select_country')
+    # print('on_select_country')
 
 
 # Функция для обработки нажатия кнопки поиска страны
@@ -41,7 +41,7 @@ async def on_search_country(c: types.CallbackQuery, widget: Button, manager: Dia
     :param manager: Менеджер диалогов от aiogram_dialog.
     """
     await manager.switch_to(CountryMenu.enter_country)
-    print('on_search_country')
+    # print('on_search_country')
 
 
 # Функция для обработки результата поиска страны
@@ -54,7 +54,7 @@ async def on_result_country(m: types.Message, widget: TextInput, manager: Dialog
     :param manager: Менеджер диалогов от aiogram_dialog.
     :param country_name: Название страны, введенное пользователем.
     """
-    print('on_result_country')
+    # print('on_result_country')
     countries = await models.Country.search_countries(country_name)
     if len(countries) == 0:
         await manager.switch_to(CountryMenu.enter_country_error)
@@ -75,7 +75,7 @@ async def send_service_info(country_id: int, service_code: str, c: types.Callbac
     :param c: Объект CallbackQuery от aiogram.
     :param manager: Менеджер диалогов от aiogram_dialog (опционально).
     """
-    print('send_service_info')
+    # print('send_service_info')
 
     # Создаем экземпляр класса для получения SMS
     sms = SmsReceive()
@@ -185,7 +185,7 @@ async def on_select_service(c: types.CallbackQuery, widget: Select, manager: Dia
     :param manager: Менеджер диалогов от aiogram_dialog.
     :param service_code: Код выбранного сервиса.
     """
-    print('on_select_service')
+    # print('on_select_service')
     ctx = manager.current_context()
     country_id = int(ctx.start_data.get("country_id"))
     await send_service_info(country_id, service_code, c, manager)
@@ -201,7 +201,7 @@ async def on_search_service(c: types.CallbackQuery, widget: Button, manager: Dia
     :param manager: Менеджер диалогов от aiogram_dialog.
     """
     await manager.switch_to(ServiceMenu.enter_service)
-    print('on_search_service')
+    # print('on_search_service')
 
 
 # Функция для обработки результата поиска сервиса
@@ -214,7 +214,7 @@ async def on_result_service(m: types.Message, widget: TextInput, manager: Dialog
     :param manager: Менеджер диалогов от aiogram_dialog.
     :param service_name: Название сервиса, введенное пользователем.
     """
-    print('on_result_service')
+    # print('on_result_service')
     services = await models.Service.search_service(service_name)
     ctx = manager.current_context()
     country_id = int(ctx.start_data.get("country_id"))

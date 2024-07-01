@@ -7,7 +7,7 @@ from aiogram.client.bot import DefaultBotProperties
 
 def read_config(path, default={}):
     if path.exists() is False:
-        print(f"WARNING: {path} not found")
+        # print(f"WARNING: {path} not found")
         return default
     else:
         with path.open('r') as ymlfile:

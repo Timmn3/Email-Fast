@@ -95,7 +95,7 @@ async def read_item(
 @app.post("/https://emailfast.info/payok")
 async def payok(request: Request):
     data = await request.form()
-    print(data, flush=True)
+    # print(data, flush=True)
     return Response(status_code=200)
 
 

@@ -27,7 +27,7 @@ class LavaApi:
 
     async def _response(self, url: str, data: dict):
         async with aiohttp.ClientSession(headers=self.get_headers(data)) as session:
-            async with session.post(url, json=data) as response:
+            async with session.post(url, json=data, ssl=False) as response:
                 return json.loads(await response.text())
 
     async def create_invoice(self, amount: float, order_id: str):
