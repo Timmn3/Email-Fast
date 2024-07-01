@@ -89,6 +89,12 @@ async def add_balance(message: types.Message):
         await message.answer("Пользователь не найден.")
 
 
+@router.message(Command('names'))
+async def names(message: types.Message):
+    services_db_codes = await models.Service.get_names_list()
+    print(services_db_codes)
+
+
 @router.message(Command('freemoney'))
 async def free_money(message: types.Message):
     if message.from_user.id not in ADMINS:
