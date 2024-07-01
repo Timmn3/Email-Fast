@@ -213,6 +213,15 @@ class Service(Model):
         """
         return await cls.all().values_list('code', flat=True)
 
+    @classmethod
+    async def get_names_list(cls):
+        """
+        Получает список всех названий сервисов.
+
+        :return: Список названий сервисов.
+        """
+        return await cls.all().values_list('name', flat=True)
+
 
 class Mail(Model):
     class Meta:
@@ -422,11 +431,14 @@ class Payment(Model):
     user: User = fields.ForeignKeyField('models.User', related_name='payments')  # Связь с моделью User (внешний ключ)
     method: PaymentMethod = fields.CharEnumField(PaymentMethod, max_length=16)  # Метод оплаты (перечисление)
     amount: float = fields.FloatField()  # Сумма платежа
-    order_id: str = fields.CharField(max_length=128, unique=True, index=True, null=True)  # Идентификатор заказа (уникальный)
-    invoice_id: str = fields.CharField(max_length=128, unique=True, index=True, null=True)  # Идентификатор счета (уникальный)
+    order_id: str = fields.CharField(max_length=128, unique=True, index=True,
+                                     null=True)  # Идентификатор заказа (уникальный)
+    invoice_id: str = fields.CharField(max_length=128, unique=True, index=True,
+                                       null=True)  # Идентификатор счета (уникальный)
     continue_data: dict = fields.JSONField(null=True)  # Дополнительные данные для продолжения платежа (JSON)
     is_success: bool = fields.BooleanField(default=False)  # Флаг успешности платежа
-    created_at: datetime = fields.DatetimeField(auto_now_add=True)  # Дата и время создания записи (автоматически устанавливается при создании)
+    created_at: datetime = fields.DatetimeField(
+        auto_now_add=True)  # Дата и время создания записи (автоматически устанавливается при создании)
 
     @classmethod
     async def create_payment(cls, user: User, method: PaymentMethod, amount: float, continue_data: dict = None):
@@ -548,4 +560,3 @@ class PaymentLink(Model):
         :return: Список объектов ссылок на оплату.
         """
         return await cls.all()
-
