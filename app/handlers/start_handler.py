@@ -95,8 +95,8 @@ async def receive_sms(message: types.Message, dialog_manager: DialogManager):
     if not sub:
         await send_subscribe_msg(user)
         return
-
-    await dialog_manager.start(CountryMenu.select_country, mode=StartMode.RESET_STACK)
+    # изменил CountryMenu.select_country на ServiceMenu.select_service
+    await dialog_manager.start(ServiceMenu.select_service, mode=StartMode.RESET_STACK)
 
 
 @router.message(Command("get_email"))

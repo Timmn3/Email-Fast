@@ -271,7 +271,8 @@ class SMSActivateAPIAsync(SMSActivateAPI):
         if country is not None:
             payload['country'] = country
         data = await self.get_request(self.__api_url, params=payload)
-        return self.response("getPrices", data)
+        price = self.response("getPrices", data)
+        return price
 
     async def getCountries(self):
         payload = {'api_key': self.api_key, 'action': 'getCountries'}
