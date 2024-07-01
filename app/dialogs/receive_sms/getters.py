@@ -97,3 +97,44 @@ async def get_need_balance(dialog_manager: DialogManager, **middleware_data):
         "balance": user.balance
     }
     return data
+
+
+async def get_all_services(dialog_manager: DialogManager, **middleware_data):
+    ctx = dialog_manager.current_context()
+    country_id = ctx.start_data.get("country_id")
+    if country_id is None:
+        return {"services": []}
+
+    search_service_name = ctx.dialog_data.get("search_service_name")
+    if search_service_name is not None:
+        find_services = await models.Service.search_service(search_service_name)
+        find_services_codes = list(map(lambda x: x.code, find_services))
+    else:
+        find_services_codes = None
+
+    sms = SmsReceive()
+    services = await sms.get_services_by_country_id(country_id=country_id)
+    services_list = []
+    for service in services:
+        if service['count'] < 5:
+            continue
+
+        service_obj = await models.Service.get_service(code=service['code'])
+        if service_obj is None:
+            continue
+
+        if find_services_codes is not None and service_obj.code not in find_services_codes:
+            continue
+
+        service_data = {
+            'code': service['code'],
+            'cost': service['cost'],
+            'name': service_obj.name
+        }
+
+        services_list.append(service_data)
+
+    data = {
+        "services": services_list
+    }
+    return data
