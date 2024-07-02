@@ -14,7 +14,10 @@ from app.dependencies import ADMINS, bot
 from app.services import bot_texts as bt
 from tabulate import tabulate
 
+from test_date import db_data
+
 router = Router()
+
 
 class BroadcastState(StatesGroup):
     send_message = State()
@@ -26,14 +29,17 @@ async def stat(message: types.Message):
         return
 
     users_count = await models.User.all().count()
-    users_count_today = await models.User.filter(created_at__gte=timezone.now().replace(hour=0, minute=0, second=0)).count()
+    users_count_today = await models.User.filter(
+        created_at__gte=timezone.now().replace(hour=0, minute=0, second=0)).count()
 
     letters_count = await models.Letter.all().count()
-    letters_count_today = await models.Letter.filter(created_at__gte=timezone.now().replace(hour=0, minute=0, second=0)).count()
+    letters_count_today = await models.Letter.filter(
+        created_at__gte=timezone.now().replace(hour=0, minute=0, second=0)).count()
 
     sms_count = await models.Activation.filter(status=models.StatusResponse.STATUS_OK).count()
     sms_count_today = await models.Activation.filter(status=models.StatusResponse.STATUS_OK,
-                                                     created_at__gte=timezone.now().replace(hour=0, minute=0, second=0)).count()
+                                                     created_at__gte=timezone.now().replace(hour=0, minute=0,
+                                                                                            second=0)).count()
 
     payments = await models.Payment.filter(is_success=True).all().prefetch_related('user')
     payments_count = len(payments)
@@ -48,14 +54,18 @@ async def stat(message: types.Message):
         await asyncio.sleep(0)
 
     payments_count_today = await models.Payment.filter(is_success=True,
-                                                       created_at__gte=timezone.now().replace(hour=0, minute=0, second=0)).count()
+                                                       created_at__gte=timezone.now().replace(hour=0, minute=0,
+                                                                                              second=0)).count()
 
     payments_amount_today = sum(await models.Payment.filter(is_success=True,
-                                                            created_at__gte=timezone.now().replace(hour=0, minute=0, second=0)).values_list('amount', flat=True))
+                                                            created_at__gte=timezone.now().replace(hour=0, minute=0,
+                                                                                                   second=0)).values_list(
+        'amount', flat=True))
 
     rent_email_count = await models.Mail.filter(is_paid_mail=True).all().count()
     rent_email_count_today = await models.Mail.filter(is_paid_mail=True,
-                                                      created_at__gte=timezone.now().replace(hour=0, minute=0, second=0)).count()
+                                                      created_at__gte=timezone.now().replace(hour=0, minute=0,
+                                                                                             second=0)).count()
 
     msg_text = bt.ADMIN_STAT.format(
         users_count=users_count,
@@ -77,22 +87,9 @@ async def stat(message: types.Message):
     await message.answer(msg_text)
 
 
-@router.message(Command('add_balance'))
-async def add_balance(message: types.Message):
-
-    user = await User.get_user(message.from_user.id)
-    if user:
-        user.balance += 1000
-        await user.save()
-        await message.answer(f"Баланс пополнен на 1000 рублей. Текущий баланс: {user.balance} рублей.")
-    else:
-        await message.answer("Пользователь не найден.")
-
-
-@router.message(Command('names'))
-async def names(message: types.Message):
-    services_db_codes = await models.Service.get_names_list()
-    print(services_db_codes)
+@router.message(Command('add_test'))
+async def add_test(message: types.Message):
+    await User.test_bd(message.from_user.id)
 
 
 @router.message(Command('freemoney'))

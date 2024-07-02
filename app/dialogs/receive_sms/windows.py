@@ -7,8 +7,9 @@ from aiogram_dialog.widgets.text import Const, Format
 
 from app.dialogs.personal_cabinet.selected import on_deposit_new
 from app.dialogs.receive_sms import states
-from app.dialogs.receive_sms.getters import get_countries, get_services, get_need_balance, get_other_service
-from app.dialogs.receive_sms.selected import on_select_country, on_select_service, on_search_country, on_result_country, \
+from app.dialogs.receive_sms.getters import get_countries_service, get_services, get_need_balance, get_other_service, \
+    get_services_2
+from app.dialogs.receive_sms.selected import on_select_country_new, on_select_service, on_search_country, on_result_country, \
     on_search_service, on_result_service
 from app.services import bot_texts as bt
 
@@ -24,11 +25,11 @@ def select_country_window():
         Const(bt.SELECT_COUNTRY),
         ScrollingGroup(
             Select(
-                Format("{item.name}"),
+                Format("{item[country]} {item[price]} ₽"),
                 id="countries_select",
-                item_id_getter=operator.attrgetter("country_id"),
+                item_id_getter=operator.itemgetter("id"),
                 items="countries",
-                on_click=on_select_country,
+                on_click=on_select_country_new,
             ),
             id="countries_scroll",
             width=2,
@@ -36,7 +37,7 @@ def select_country_window():
         ),
         Button(Const(bt.SEARCH_COUNTRY_BTN), id="search_country", on_click=on_search_country),
         state=states.CountryMenu.select_country,
-        getter=get_countries
+        getter=get_countries_service
     )
 
 
@@ -81,7 +82,7 @@ def select_service_window():
         Const(bt.SELECT_SERVICE),
         ScrollingGroup(
             Select(
-                Format("{item[name]} {item[cost]}₽"),
+                Format("{item[name]}"),
                 id="services_select",
                 item_id_getter=operator.itemgetter("code"),
                 items="services",
@@ -94,7 +95,7 @@ def select_service_window():
         Button(Const(bt.SEARCH_SERVICE_BTN), id="search_service", on_click=on_search_service),
         Cancel(Const(bt.BACK_BTN)),
         state=states.ServiceMenu.select_service,
-        getter=get_services
+        getter=get_services_2
     )
 
 

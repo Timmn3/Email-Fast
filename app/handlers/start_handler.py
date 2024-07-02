@@ -13,7 +13,7 @@ from app.dialogs.bot_menu import states
 from app.dialogs.personal_cabinet.selected import send_payment_keyboard
 from app.dialogs.personal_cabinet.states import PersonalMenu
 from app.dialogs.receive_email.states import ReceiveEmailMenu
-from app.dialogs.receive_sms.selected import send_service_info
+from app.dialogs.receive_sms.selected import send_country_info
 from app.dialogs.receive_sms.states import CountryMenu, ServiceMenu
 from app.services import bot_texts as bt
 from app.services.keyboards import start_kb
@@ -349,8 +349,8 @@ async def continue_payment(call: types.CallbackQuery, dialog_manager: DialogMana
         await dialog_manager.start(ReceiveEmailMenu.rent_email_confirm, data=payment.continue_data,
                                    mode=StartMode.RESET_STACK)
 
-    else:
-        await send_service_info(payment.continue_data['country_id'], payment.continue_data['service_code'], call,
+    else: # было (payment.continue_data['country_id'], payment.continue_data['service_code'], call, dialog_manager)
+        await send_country_info(payment.continue_data['service_code'], call,
                                 dialog_manager)
 
 

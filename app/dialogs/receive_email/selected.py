@@ -8,6 +8,7 @@ from aiogram_dialog.widgets.kbd import Select, Button
 from tortoise import timezone
 
 from app.db import models
+from app.dialogs.personal_cabinet.selected import on_deposit_state
 from app.dialogs.receive_email.states import ReceiveEmailMenu
 from app.services.keyboards import start_kb
 from app.services.low_balance import check_low_balance, send_low_balance_alert
@@ -108,7 +109,8 @@ async def on_rent_email_item(c: types.CallbackQuery, widget: Button, manager: Di
 
     user = await models.User.get_user(c.from_user.id)
     if user.balance < ctx.dialog_data['cost']:
-        await manager.switch_to(ReceiveEmailMenu.not_enough_balance)
+        await on_deposit_state(c=c,widget=widget, manager=manager)
+        # await manager.switch_to(ReceiveEmailMenu.not_enough_balance)
         return
 
     await manager.switch_to(ReceiveEmailMenu.rent_email_confirm)

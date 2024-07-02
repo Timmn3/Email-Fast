@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
-
+import math
 import asyncio
 from aiogram import types
-from aiogram_dialog import DialogManager
+from aiogram_dialog import DialogManager, StartMode
 from aiogram_dialog.api.entities import Context
 from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Select, Button
@@ -18,17 +18,36 @@ from app.services import bot_texts as bt
 
 
 # Функция для обработки выбора страны
-async def on_select_country(c: types.CallbackQuery, widget: Select, manager: DialogManager, country_id: str):
+async def on_select_country_new(c: types.CallbackQuery, widget: Select, manager: DialogManager, country_index: str):
     """
-    Обрабатывает выбор страны пользователем и переводит на меню выбора сервиса.
+    Обрабатывает выбор страны и сервиса.
 
     :param c: Объект CallbackQuery от aiogram.
     :param widget: Виджет Select от aiogram_dialog.
     :param manager: Менеджер диалогов от aiogram_dialog.
-    :param country_id: Идентификатор выбранной страны.
+    :param country_index: Индекс выбранной страны.
     """
-    await manager.start(ServiceMenu.select_service, data={"country_id": country_id})
-    # print('on_select_country')
+    # Извлекаем service_code из текущего контекста
+    ctx = manager.current_context()
+    service_code = ctx.start_data.get('service_code')
+
+    # Извлекаем список стран с ценами из контекста
+    countries_with_prices = ctx.start_data.get('countries_with_prices', [])
+
+    # Преобразуем индекс в целое число
+    country_index = int(country_index)
+
+    # Проверяем, что индекс находится в пределах списка
+    if 0 <= country_index < len(countries_with_prices):
+        selected_country = countries_with_prices[country_index]
+        country_name = selected_country['country']
+        price = selected_country['price']
+        country_id = await models.Country.get_country_id_by_name(country_name)
+        # print(f"Service Code: {service_code}, country_id: {country_id}, Country: {country_name}, Price: {price}")
+        await send_service_on_country(country_id=country_id, service_code=service_code, price=price, c=c)
+
+    else:
+        print(f"Country with index {country_index} not found.")
 
 
 # Функция для обработки нажатия кнопки поиска страны
@@ -54,7 +73,6 @@ async def on_result_country(m: types.Message, widget: TextInput, manager: Dialog
     :param manager: Менеджер диалогов от aiogram_dialog.
     :param country_name: Название страны, введенное пользователем.
     """
-    # print('on_result_country')
     countries = await models.Country.search_countries(country_name)
     if len(countries) == 0:
         await manager.switch_to(CountryMenu.enter_country_error)
@@ -66,7 +84,8 @@ async def on_result_country(m: types.Message, widget: TextInput, manager: Dialog
 
 
 # Функция для отправки информации о сервисе
-async def send_service_info(country_id: int, service_code: str, c: types.CallbackQuery, manager: DialogManager = None):
+async def send_service_on_country(country_id: int, service_code: str, price: float,
+                                  c: types.CallbackQuery, manager: DialogManager = None):
     """
     Отправляет информацию о сервисе пользователю и обрабатывает активацию номера.
 
@@ -75,40 +94,15 @@ async def send_service_info(country_id: int, service_code: str, c: types.Callbac
     :param c: Объект CallbackQuery от aiogram.
     :param manager: Менеджер диалогов от aiogram_dialog (опционально).
     """
-    # print('send_service_info')
-
-    # Создаем экземпляр класса для получения SMS
     sms = SmsReceive()
-
-    # Получаем список сервисов для указанной страны
-    services = await sms.get_services_by_country_id(country_id=country_id)
-
-    # Ищем нужный сервис по коду
-    service = next(filter(lambda x: x['code'] == service_code, services), None)
-
-    # Если сервис не найден, выходим из функции
-    if service is None:
-        return
-
-    # Получаем стоимость сервиса
-    cost = float(service['cost'])
 
     # Получаем информацию о пользователе
     user = await models.User.get_user(c.from_user.id)
 
     # Проверяем, достаточно ли у пользователя средств на балансе
-    if user.balance < cost:
-        if manager:
-            # Если используется менеджер диалогов, сохраняем данные и переключаемся на состояние "недостаточно средств"
-            ctx = manager.current_context()
-            ctx.dialog_data['country_id'] = country_id
-            ctx.dialog_data['service_code'] = service_code
-            ctx.dialog_data['service_cost'] = cost
-            await manager.switch_to(ServiceMenu.not_enough_balance)
-            return
-        else:
-            # Если менеджер диалогов не используется, показываем предупреждение
-            await c.answer(text=bt.NOT_ENOUGH_BALANCE_ALERT, show_alert=True)
+    if user.balance < price:
+        await c.answer(text=bt.NOT_ENOUGH_BALANCE_ALERT, show_alert=True)
+        return
 
     # Получаем номер телефона для активации
     phone_number_data = await sms.get_phone_number(country_id=country_id, service_code=service_code)
@@ -130,7 +124,7 @@ async def send_service_info(country_id: int, service_code: str, c: types.Callbac
     service = await models.Service.get_service(code=service_code)
 
     # Проверяем, низкий ли баланс у пользователя после списания средств
-    low_balance = await check_low_balance(user, cost)
+    low_balance = await check_low_balance(user, price)
 
     # Добавляем запись об активации в базу данных
     activation = await models.Activation.add_activation(
@@ -138,18 +132,14 @@ async def send_service_info(country_id: int, service_code: str, c: types.Callbac
         activation_id=activation_id,
         country=country,
         service=service,
-        cost=cost,
+        cost=price,
         phone_number=phone_number,
         activation_expire_at=activation_expire_at + timedelta(minutes=10),
     )
 
     # Списываем средства с баланса пользователя
-    user.balance -= cost
+    user.balance -= price
     await user.save(update_fields=['balance'])
-
-    # Если используется менеджер диалогов, сбрасываем стек состояний
-    if manager:
-        await manager.reset_stack()
 
     # Создаем клавиатуру с кнопкой для отмены сервиса
     mk = types.InlineKeyboardMarkup(
@@ -168,11 +158,64 @@ async def send_service_info(country_id: int, service_code: str, c: types.Callbac
         ),
         reply_markup=mk
     )
+    # Если используется менеджер диалогов, сбрасываем стек состояний
+    await manager.reset_stack()
 
     # Ждем 2 секунды перед отправкой уведомления о низком балансе, если это необходимо
     await asyncio.sleep(2)
     if low_balance:
         await send_low_balance_alert(user)
+
+
+# Функция для отправки информации о сервисе
+async def send_country_info(service_code: str, c: types.CallbackQuery, manager: DialogManager = None):
+    """
+    Отправляет информацию о сервисе пользователю и обрабатывает активацию номера.
+
+    :param service_code: Код сервиса.
+    :param c: Объект CallbackQuery от aiogram.
+    :param manager: Менеджер диалогов от aiogram_dialog (опционально).
+    """
+
+    # Создаем экземпляр класса для получения SMS
+    sms = SmsReceive()
+
+    # Получаем список стран для указанного сервиса
+    services = await sms.get_top_country(service=service_code)
+    # Извлекаем список стран с ценами и увеличиваем цену на 30%
+    countries_with_prices = [{"country": service["country"], "price": math.ceil(float(service["price"]) * 1.3)}
+                             for service in services.values()]
+
+    # Сортируем список стран по цене от меньшего к большему
+    sorted_countries_with_prices = sorted(countries_with_prices, key=lambda x: x['price'])
+
+    # Получаем словарь с именами стран
+    country_name_mapping = await models.Country.get_country_name_mapping()
+
+    # Заменяем идентификаторы стран на их имена
+    for country in sorted_countries_with_prices:
+        country["country"] = country_name_mapping.get(country["country"], "Unknown Country")
+
+    # Передача данных через параметр data
+    await manager.start(CountryMenu.select_country, mode=StartMode.NORMAL,
+                        data={"countries_with_prices": sorted_countries_with_prices, "service_code": service_code})
+
+
+# Функция для обработки выбора сервиса
+async def on_select_service_old(c: types.CallbackQuery, widget: Select, manager: DialogManager, service_code: str):
+    """
+    Обрабатывает выбор сервиса пользователем и отправляет информацию о сервисе.
+
+    :param c: Объект CallbackQuery от aiogram.
+    :param widget: Виджет Select от aiogram_dialog.
+    :param manager: Менеджер диалогов от aiogram_dialog.
+    :param service_code: Код выбранного сервиса.
+    """
+    # print('on_select_service')
+    ctx = manager.current_context()
+    print(service_code)
+    # country_id = int(ctx.start_data.get("country_id"))
+    # await send_service_info(country_id, service_code, c, manager)
 
 
 # Функция для обработки выбора сервиса
@@ -185,10 +228,7 @@ async def on_select_service(c: types.CallbackQuery, widget: Select, manager: Dia
     :param manager: Менеджер диалогов от aiogram_dialog.
     :param service_code: Код выбранного сервиса.
     """
-    # print('on_select_service')
-    ctx = manager.current_context()
-    country_id = int(ctx.start_data.get("country_id"))
-    await send_service_info(country_id, service_code, c, manager)
+    await send_country_info(service_code, c, manager)
 
 
 # Функция для обработки нажатия кнопки поиска сервиса

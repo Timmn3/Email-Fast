@@ -87,6 +87,15 @@ class SmsReceive:
 
         return services
 
+    async def get_top_country(self, service):
+        """
+        Получает список топ 10 стран по сервису.
+
+        :return:
+        """
+        services_data = await self.sa.get_top_countries_by_service(service)
+        return services_data
+
     async def get_phone_number(self, country_id: int, service_code: str):
         """
         Получает номер телефона для указанной страны и сервиса.

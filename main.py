@@ -65,8 +65,8 @@ def set_scheduled_jobs(scheduler, *args, **kwargs):
     scheduler.add_job(check_sms, "interval", seconds=10, max_instances=3)
     scheduler.add_job(check_email, "interval", seconds=10, max_instances=3)
     scheduler.add_job(check_payment, "interval", seconds=10, max_instances=3)
-    scheduler.add_job(update_countries_and_services, "interval", minutes=30,
-                      next_run_time=datetime.now() + timedelta(seconds=10), max_instances=3)
+    # scheduler.add_job(update_countries_and_services, "interval", minutes=30,
+    #                   next_run_time=datetime.now() + timedelta(seconds=10), max_instances=3)
 
 
 class SkipSpecificLogFilter(logging.Filter):

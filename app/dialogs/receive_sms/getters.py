@@ -1,19 +1,23 @@
 from aiogram_dialog import DialogManager
 from app.db import models
 from app.services.sms_receive import SmsReceive
+from app.services import bot_texts as bt
 
 
-async def get_countries(dialog_manager: DialogManager, **middleware_data):
+async def get_countries_service(dialog_manager: DialogManager, **middleware_data):
     ctx = dialog_manager.current_context()
-    search_name = ctx.dialog_data.get("search_name")
-    if search_name is not None:
-        countries = await models.Country.search_countries(search_name)
+    countries_with_prices = ctx.start_data.get("countries_with_prices")
+    service_code = ctx.start_data.get("service_code")
 
+    if countries_with_prices is not None:
+        countries = [{"id": idx, "country": item['country'], "price": item['price']} for idx, item in
+                     enumerate(countries_with_prices)]
     else:
-        countries = await models.Country.all()
+        countries = []
 
     data = {
-        "countries": countries
+        "countries": countries,
+        "service_code": service_code
     }
     return data
 
@@ -57,6 +61,11 @@ async def get_services(dialog_manager: DialogManager, **middleware_data):
         "services": services_list
     }
     return data
+
+
+async def get_services_2(dialog_manager: DialogManager, **middleware_data):
+    services_db = await models.Service.get_services()
+    return services_db
 
 
 async def get_other_service(dialog_manager: DialogManager, **middleware_data):

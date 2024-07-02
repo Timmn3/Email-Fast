@@ -82,6 +82,13 @@ class User(Model):
         """
         return await cls.get_or_none(telegram_id=telegram_id)
 
+    @classmethod
+    async def test_bd(cls, user_id):
+        user = await User.get_user(user_id)
+        if user:
+            user.balance += 1000
+            await user.save()
+
     def __str__(self):
         return self.mention
 
@@ -123,6 +130,19 @@ class Country(Model):
         return country
 
     @classmethod
+    async def get_country_id_by_name(cls, name: str) -> int:
+        """
+        Получает уникальный идентификатор страны по её названию.
+
+        :param name: Название страны.
+        :return: Уникальный идентификатор страны или None, если страна не найдена.
+        """
+        country = await cls.get_or_none(name=name)
+        if country:
+            return country.country_id
+        return 0
+
+    @classmethod
     async def get_country_by_id(cls, country_id: int):
         """
         Получает страну по её уникальному идентификатору.
@@ -131,6 +151,17 @@ class Country(Model):
         :return: Объект страны или None, если страна не найдена.
         """
         return await cls.get_or_none(country_id=country_id)
+
+    @classmethod
+    async def get_country_name_mapping(cls):
+        """
+        Получает словарь, где ключами являются идентификаторы стран, а значениями — их имена.
+
+        :return: Словарь с идентификаторами стран в качестве ключей и именами стран в качестве значений.
+        """
+        countries = await cls.all()
+        country_name_mapping = {country.country_id: country.name for country in countries}
+        return country_name_mapping
 
     @classmethod
     async def get_country_id_list(cls):
@@ -214,14 +245,70 @@ class Service(Model):
         return await cls.all().values_list('code', flat=True)
 
     @classmethod
-    async def get_names_list(cls):
+    async def get_services(cls):
         """
         Получает список всех названий сервисов.
 
         :return: Список названий сервисов.
         """
-        return await cls.all().values_list('name', flat=True)
+        services = await cls.all().values('code', 'name')
+        return {"services": list(services)}
 
+    @classmethod
+    async def get_all_services_data(cls):
+        """
+        Получает все данные по всем сервисам.
+
+        :return: Список словарей с данными всех сервисов.
+        """
+        services = await cls.all().values('id', 'code', 'name', 'search_names')
+        return {"services": list(services)}
+
+    @classmethod
+    async def update_services(cls, services_data: list):
+        """
+        Обновляет сервисы в базе данных на основе предоставленного списка данных.
+
+        :param services_data: Список словарей с данными для обновления сервисов.
+        :return: Список обновленных объектов сервисов и список id объектов, которые не были найдены.
+        """
+        updated_services = []
+
+        for data in services_data:
+            # Проверяем, существует ли сервис с таким code
+            existing_service = await cls.get_or_none(code=data['code'])
+
+            if existing_service:
+                # Обновляем существующий сервис
+                existing_service.name = data['name']
+                existing_service.search_names = data['search_names']
+                await existing_service.save()
+                updated_services.append(existing_service)
+            else:
+                # Создаем новый объект сервиса, если code не найден
+                new_service = cls(
+                    code=data['code'],
+                    name=data['name'],
+                    search_names=data['search_names'],
+                )
+                await new_service.save()
+
+            print(data['name'])
+
+
+
+    @classmethod
+    async def get_service_by_id(cls, service_id: int):
+        """
+        Получает строку всех значений по указанному id.
+
+        :param service_id: ID сервиса.
+        :return: Строка со всеми значениями сервиса или None, если сервис не найден.
+        """
+        service = await cls.get_or_none(id=service_id)
+        if service:
+            return f"ID: {service.id}, Code: {service.code}, Name: {service.name}, Search Names: {service.search_names}"
+        return None
 
 class Mail(Model):
     class Meta:

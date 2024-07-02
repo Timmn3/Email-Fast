@@ -279,6 +279,18 @@ class SMSActivateAPIAsync(SMSActivateAPI):
         data = await self.get_request(self.__api_url, params=payload)
         return self.response("getCountries", data)
 
+    async def get_top_countries_by_service(self, service, free_price=False):
+        payload = {
+            'api_key': self.api_key,
+            'action': 'getTopCountriesByService',
+            'service': service,
+            'freePrice': 'true' if free_price else 'false'
+        }
+        data = await self.get_request(self.__api_url, params=payload)
+        top_countries = self.response("getTopCountriesByService", data)
+        return top_countries
+
+
     async def getAdditionalService(self, service=None, id=None):
         payload = {'api_key': self.api_key, 'action': 'getAdditionalService'}
         if service:
