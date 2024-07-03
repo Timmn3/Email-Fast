@@ -35,7 +35,7 @@ def select_country_window():
             width=2,
             height=5
         ),
-        Button(Const(bt.SEARCH_COUNTRY_BTN), id="search_country", on_click=on_search_country),
+       # Button(Const(bt.SEARCH_COUNTRY_BTN), id="search_country", on_click=on_search_country),
         state=states.CountryMenu.select_country,
         getter=get_countries_service
     )
@@ -92,7 +92,7 @@ def select_service_window():
             width=2,
             height=5
         ),
-        Button(Const(bt.SEARCH_SERVICE_BTN), id="search_service", on_click=on_search_service),
+       # Button(Const(bt.SEARCH_SERVICE_BTN), id="search_service", on_click=on_search_service),
         Cancel(Const(bt.BACK_BTN)),
         state=states.ServiceMenu.select_service,
         getter=get_services_2

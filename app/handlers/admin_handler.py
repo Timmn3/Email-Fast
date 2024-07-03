@@ -14,8 +14,6 @@ from app.dependencies import ADMINS, bot
 from app.services import bot_texts as bt
 from tabulate import tabulate
 
-from test_date import db_data
-
 router = Router()
 
 
